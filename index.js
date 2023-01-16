@@ -5,6 +5,7 @@ const connection = require("./config/db");
 const UserModel = require("./models/user.models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const cors = require('cors')
 
 const app = express();
 
