@@ -6,7 +6,7 @@ const { UserModel } = require("./models/user.model");
 const{ flghtRouter}= require('./routes/flights.route')
 const {bookingRouter}=require('./routes/booking.route')
  
-const app = express();
+const app = express(); 
 
 app.use(express.json());
 
