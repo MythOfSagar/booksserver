@@ -1,69 +1,62 @@
-const express = require("express");
-const booksRouter = require("./routes/books.routes");
 require("dotenv").config();
+
 const connection = require("./config/db");
-const UserModel = require("./models/user.models");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const cors = require('cors')
+const express = require("express");
+const { UserModel } = require("./models/user.model");
+const{ flghtRouter}= require('./routes/flights.route')
+const {bookingRouter}=require('./routes/booking.route')
 
 const app = express();
 
-app.use(cors({origin:"*"}))
-
 app.use(express.json());
 
-app.use("/books", booksRouter);
+app.use('/flights',flghtRouter)
+app.use('/booking',bookingRouter)
 
 app.get("/", (req, res) => {
-  res.send("HOME page of Book API");
+
+
+
+  res.send("Flights HomePage");
+  res.sendStatus(200);
 });
 
-app.post("/signin", async (req, res) => {
-  const { email, pass, username } = req.body;
+app.post("/register", async (req, res) => {
+  const { name, email, password } = req.body;
+
   try {
-    bcrypt.hash(pass, 4, async (err, hash) => {
-      if (err) {
-        console.log(err);
-      } else {
-        const user = new UserModel({ email, pass: hash, username });
-        await user.save();
-        res.send("Registartion Successful");
-      }
-    });
+    const newUser = new UserModel({ name, email, password });
+    await newUser.save();
+    res.status(201).send('Successfully registered');
   } catch (err) {
-    res.send(err.message);
+    res.send(err);
   }
 });
 
 app.post("/login", async (req, res) => {
-  const { email, pass } = req.body;
+  const { email, password } = req.body;
 
   try {
-    const user = await UserModel.find({ email });
-    if (user.length > 0) {
-      bcrypt.compare(pass, user[0].pass, async (err, result) => {
-        if (result) {
-          const token = jwt.sign({ course: "backend" }, "masai");
-          res.send(`Login Successful ${token}`);
-        } else {
-          res.send("Wrong creds");
-        }
-      });
+    const findUserwithEmail = await UserModel.findOne({ email });
+    if (findUserwithEmail) {
+      if (findUserwithEmail.password === password) {
+        res.status(201).send('Successfully LogedIn');
+      } else {
+        res.send("Wrong Password");
+      }
     } else {
-      res.send("Wrong creds");
+      res.send("Email Not Found, Please Register");
     }
   } catch (err) {
-    res.send("Something went wrong");
+    res.send("Error");
   }
 });
 
-app.listen(process.env.port, async () => {
+app.listen(process.env.PORT, async () => {
   try {
     await connection;
-    console.log("DB connected");
+    console.log("Successfully connected");
   } catch (err) {
     console.log(err);
   }
-  console.log(`Server running on Port ${process.env.port}`);
 });
